@@ -1,0 +1,301 @@
+body {
+   
+   
+    width: 100%;
+   
+    margin: 0 auto;
+    background-color: antiquewhite;
+  
+  }
+  main {
+    display: flex;
+  }
+  
+  
+    /* Cabecera */
+  .cabecera {
+    background-color:darkred;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+  }
+  
+  .foodHeader {
+    width: 110px;
+    margin: 10px;
+  }
+  
+   
+
+
+.error {
+  color: red;
+}
+
+.cajaPrincipal  {
+  background-color:blanchedalmond;
+  border: 2px solid #af930e;
+  padding-bottom: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  min-height: 1350px;
+  width: 100%;
+}
+
+.cajaPrincipal p {
+    color: #666;
+    line-height: 1.6;
+}
+
+.fotoInicio {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    display: block;
+    margin: 20px auto;
+}
+
+/*  MENU */
+nav {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+nav ul {
+  padding-left: 0;
+  list-style: none;
+}
+
+nav ul li {
+  display: inline;
+}
+
+nav ul li a {
+  padding: 15px 25px;
+  color:lightsalmon;
+  text-decoration: none;
+}
+
+nav ul li a:hover {
+  background:cornsilk;
+  font-size: 120%;
+}
+  .frm_incidencia_buscar {
+    width: 80%;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color:blanchedalmond;
+}
+
+.frm_incidencia_buscar h3 {
+    color: #333;
+    font-size: 1.2em;
+    margin-bottom: 20px;
+}
+.frm_incidencia_buscar_estados {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.frm_incidencia_buscar_input,
+.frm_incidencia_buscar_estados {
+    margin-bottom: 20px;
+}
+
+.frm_incidencia_buscar_input label,
+.frm_incidencia_buscar_estados label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.frm_incidencia_buscar_input input,
+.frm_incidencia_buscar_estados input:not([type=checkbox]) {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+
+.incidencia_buscar{
+    margin-top: 20px;
+}
+
+.incidencia_buscar input {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: white;
+    cursor: pointer;
+}
+
+.incidencia_buscar input:hover {
+    background-color: #0056b3;
+}
+.VerIncidencia {
+    width: 80%;
+    margin: auto;
+    margin-top: 30px;
+    background-color: #ffffff;
+    border-radius: 5px;
+    box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.1);
+    padding: 20px;
+  }
+  
+  .TituloIncidencia {
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .tincidencia {
+    color: #333333;
+    font-size: 24px;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .detalles_incidencia {
+    padding: 10px 0;
+  }
+  
+  .detalles_incidencia p {
+    color: #666666;
+    margin: 10px 0;
+  }
+  
+  .detalles_incidencia strong {
+    color: #333333;
+  }
+  
+  .presentacion {
+    padding: 10px 0;
+  }
+  
+  .presentacion p {
+    color: #666666;
+    line-height: 1.6;
+  }
+  
+  .foto_inicial {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    border-radius: 5px;
+    margin-top: 10px;
+    box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.1);
+    margin-right: 20px; /* Añade un margen a la derecha */
+  }
+  .frm_registro label {
+    font-weight: bold;
+    color: black;
+}
+ 
+    .fotoUsuario {
+        border-radius: 50%;
+        width: 100px; 
+        height: 100px; 
+        object-fit: cover; 
+        margin-bottom: 10px;
+    }
+    .Barra_lateral {
+      
+      margin: 0 0 10px 10px;
+    }
+    
+    .Barra_lateral .cajasLateral {
+      background-color:darksalmon;
+      border: 2px solid #af930e;
+      text-align:center;
+      margin-bottom: 10px;
+      width: 275px;
+    }
+    .comentarios {
+      margin-top: 40px;
+      display: grid;
+      grid-row-gap: 15px;
+    }
+    
+    .comentarios .comentario {
+      background-color:indianred;
+      margin: 0 10px 0 10px;
+      padding: 0 10px 0 10px;
+    }
+    
+    .comentarios .comentador {
+      color:maroon;
+    }
+    
+    .comentarios .enviar_comentario{
+      margin-top: 10px;
+      text-align:left;
+    }
+    .comentarios .enviar_comentario input[type="submit"]{
+      margin-top: 10px;
+    }
+    .botones_valoracion {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+    
+    .botones_valoracion button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      color: #000;
+    }
+    
+    .botones_valoracion button:hover {
+      color: #ff0000;
+    }
+    #boton_anadir_valoracion_pos{
+      background-image: url(../vista/fotos/mas.png);
+      display: inline-block;
+      width: 30px;
+      height: 29px;
+      background-repeat: no-repeat;
+      background-size: cover;
+
+    }
+    #boton_anadir_valoracion_neg{
+      background-image: url(../vista/fotos/menos.png);
+      display: inline-block;
+      width: 30px;
+      height: 29px;
+      background-repeat: no-repeat;
+      background-size: cover;
+    
+    
+}
+
+    #boton_editar{
+      background-image: url(../vista/fotos/editar.png);
+      display: inline-block;
+      width: 30px;
+      height: 29px;
+      background-repeat: no-repeat;
+      background-size: cover;
+
+    }
+    #boton_borrar{
+      background-image: url(../vista/fotos/borrar.png);
+      display: inline-block;
+      width: 30px;
+      height: 29px;
+      background-repeat: no-repeat;
+      background-size: cover;
+
+
+    }
+    #boton_anadir_comentario{
+      background-image: url(../vista/fotos/comentario.png);
+      display: inline-block;
+      width: 30px;
+      height: 29px;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+        
