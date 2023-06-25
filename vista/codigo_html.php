@@ -50,24 +50,20 @@ function menu(){
 HTML;
  //Si el usuario esta registrado, permitimos que añada una incidencia
     if (isset($_SESSION['nombre_usuario'])) {
-        echo "<li><a href='/~aulas/proyecto/controlador/anadir_Incidencia.php' ><strong>Añadir Incidencia</strong></a></li>";
-        echo "<li><a href='/~aulas/proyecto/controlador/mis_Incidencias.php' ><strong>Mis Incidencias</strong></a></li>";
+        echo "<li><a href='/~aulas/proyecto_final/controlador/anadir_Incidencia.php' ><strong>Añadir Incidencia</strong></a></li>";
+        echo "<li><a href='/~aulas/proyecto_final/controlador/mis_Incidencias.php' ><strong>Mis Incidencias</strong></a></li>";
     }
 
-    echo<<< HTML
-        <li><a href="/~aulas/proyecto/controlador/pag_contacto.php"><strong>Página de contacto</strong></a></li>
-      </ul>
-    </nav>
-    HTML;
+   
 
     if (isset($_SESSION['admin'])) {
-      echo"<nav>
-      <ul class='menu'>
+      echo"
+     
       <li><a href='/~aulas/proyecto_final/controlador/gestion_Usuarios.php' ><strong>Gestión de usuarios</strong></a></li>
       <li><a href='/~aulas/proyecto_final/controlador/log.php' ><strong>LOG</strong></a></li>
       <li><a href='/~aulas/proyecto_final/controlador/gestion_BBDD.php' ><strong>Gestión de la BBDD</strong></a></li>
-      </ul>
-    </nav>";
+    
+    ";
     }
 
 
@@ -102,7 +98,7 @@ if (isset($_POST["logout"])) {
 
 // Acceso desde formulario de editar su usuario
 if (isset($_POST["editarme"])) {
-  header("Location: /~aulas/proyecto_final/controlador/editar_usuario.php");
+  header("Location: /~aulas/proyecto_final/controlador/editar_user.php");
   exit();
 }
 echo <<< HTML

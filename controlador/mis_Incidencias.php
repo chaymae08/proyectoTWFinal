@@ -23,67 +23,8 @@ if (isset($_POST['accion'])) {
 
     switch ($_POST['accion']) {
 
-        //Si la accion es buscar, obtenemos los parametros de busqueda
-        case 'Aplicar criterios de búsqueda':
-
-            if (isset($_POST['texto_buscar']) && $_POST['texto_buscar']!='') {
-                $texto_buscar =$_POST['texto_buscar'];
-            }
-  
-            if (isset($_POST['lugar_buscar']) && $_POST['lugar_buscar']!='') {
-                $lugar_buscar =$_POST['lugar_buscar'];
-            }
-  
-            if (isset($_POST['estados_buscar']) && $_POST['estados_buscar']!='') {
-                $estados_buscar =$_POST['estados_buscar'];
-            }
-  
-            if (isset($_POST['orden_busqueda']))
-                $orden=$_POST['orden_busqueda'];
-  
-            if (isset($_POST['items_buscar']) && $_POST['items_buscar']!='') {
-                $items_buscar =$_POST['items_buscar'];
-            }
-            if (isset($_POST['palabra_clave']) && $_POST['palabra_clave']!='') {
-                $palabra_clave =$_POST['palabra_clave'];
-            }
-            if (isset($_POST['estados_buscar']) && $_POST['estados_buscar']!='') {
-                $estados_buscar =$_POST['estados_buscar'];
-            }
-
-            
-            
-  
-            $accion='Buscar';
-  
-          
-
-        break;
-        case 'Limpiar búsqueda':
-            // Aquí puedes resetear todas las variables de búsqueda
-            if (isset($_POST['texto_buscar'])) {
-                unset($_POST['texto_buscar']);
-            }
-  
-            if (isset($_POST['lugar_buscar'])) {
-                unset($_POST['lugar_buscar']);
-            }
-  
-            if (isset($_POST['estados_buscar'])) {
-                unset($_POST['estados_buscar']);
-            }
-  
-            if (isset($_POST['orden_busqueda']))
-                unset($_POST['orden_busqueda']);
-  
-            if (isset($_POST['items_buscar'])) {
-                unset($_POST['items_buscar']);
-            }
-            if (isset($_POST['palabra_clave'])) {
-                unset($_POST['palabra_clave']);
-            }
-  
-          break;
+        
+       
         
         case 'Ver': // Visualizaremos una incidencia
             $accion = 'Ver';
@@ -120,12 +61,11 @@ if (isset($_POST['accion'])) {
 }
     if (!is_string($db=DB_conexion())) {
         //Dependiendo del orden, obtenemos las incidencias. Si no se ha indicado, la ponemos ascendendente
-    
-            $incidencias_totales=DB_getListadoIncidenciaTotal($db);
+            $incidencias_totales=DB_getListadoMisincidencias($db);
+
             $estado = DB_getListadoEstados($db);
     
         if ($accion=='') { //Si todavia no se ha especificado accion, mostramos el formulario de busqueda y todas las incidencias
-            FORM_buscarIncidencia($estado);
           Vista_listadoIncidencias($incidencias_totales);
             //Borramos esas variables por si el usuario en mitad de una accion, vuelve al listado
 
@@ -166,7 +106,7 @@ if (isset($_POST['accion'])) {
             if(isset($_SESSION['id_usuario'])) //Si el usuario esta registrado, comprobamos si ya ha valorado la 
               $valorada=DB_getValoradaUsuario($db, $id_incidencias, $_SESSION['id_usuario']);
               
-            $valorada = null;
+           
              Vista_verIncidencia ($db,$incidencia,$comentarios,$valorada);
           break;
           case 'Comentario_enviado':
@@ -201,7 +141,7 @@ if (isset($_POST['accion'])) {
             break;
 
             case 'Cancelar':
-                header('/~aulas/proyecto_final/controlador/listado.php');
+                header('/~aulas/proyecto_final/controlador/mis_Incidencias.php');
               break;
 
               //VALORACION
