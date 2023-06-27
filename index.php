@@ -30,5 +30,7 @@ echo <<< HTML
 
 HTML;
 barraHTML();
+footerHTML();
+
 
 ?>

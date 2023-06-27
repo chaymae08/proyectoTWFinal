@@ -133,4 +133,4 @@ HTML;
 
 
 barraHTML();
-#footerHTML();
+footerHTML();

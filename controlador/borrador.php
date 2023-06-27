@@ -240,6 +240,20 @@ if (!is_string($db=DB_conexion())) {
           header('refresh: 5; url=pag_listado.php');
           echo "Redireccionado en 5 seg..";
         break;
+          footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+    }
+    
+    footer div {
+      margin: 0 10px;
+    }
+    
+    footer .barra {
+      margin: 0;
+    }
         */
 
         case 'Cancelar':

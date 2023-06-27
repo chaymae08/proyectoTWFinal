@@ -61,7 +61,7 @@ HTML;
      
       <li><a href='/~aulas/proyecto_final/controlador/gestion_Usuarios.php' ><strong>Gestión de usuarios</strong></a></li>
       <li><a href='/~aulas/proyecto_final/controlador/log.php' ><strong>LOG</strong></a></li>
-      <li><a href='/~aulas/proyecto_final/controlador/gestion_BBDD.php' ><strong>Gestión de la BBDD</strong></a></li>
+      <li><a href='/~aulas/proyecto_final/controlador/gestion_BDD.php' ><strong>Gestión de la BBDD</strong></a></li>
     
     ";
     }
@@ -125,9 +125,63 @@ echo " </section>";
   <p>Puedes registrarte aquí:</p>
   <p><a href='/~aulas/proyecto_final/controlador/gestion_registro.php'>Cuestionario de registro</a></p>
   </section>";
-}
 
 }
+      if (!is_string($db=DB_conexion())) {
+        if (! ($num_incidencias=DB_getNumIncidenciasTotal($db))) {
+            $num_incidencias="No hemos podido conseguir las incidencias";
+        }
+
+        if (! ($num_usuarios=DB_getNumUsuariosTotal($db))) {
+            $num_usuarios="No hemos podido conseguir los usuarios";
+        }
+
+        if (! ($ranking=DB_getMasComentadas($db))) {
+            $ranking[0]=$ranking[1]=$ranking[2]="No hemos podido conseguir las incidencias mas comentadas";
+        }
+
+     
+
+
+}
+
+echo <<< HTML
+
+<section class="cajasLateral" id="num_incidencias">
+  <h4>Nº incidencias</h4>
+  <p>¡Hay $num_incidencias incidecnias!</p>
+</section>
+
+<section class="cajasLateral" id="num_usuarios">
+  <h4>Nº usuarios</h4>
+  <p>¡Hay $num_usuarios usuarios registrados!</p>
+</section>
+
+<section class="cajasLateral" id="mas_comentadas">
+  <h4>+ comentadas</h4>
+    <ol>
+HTML;
+if(gettype($ranking)!='string'){
+  foreach($ranking as $i)
+      echo "$i <br />";
+}
+      else {
+        echo "No hay incidencias suficientes";
+      }
+echo <<< HTML
+    </ol>
+</section>
+
+
+
+</aside>
+  </main>
+HTML;
+
+
+
+}
+
 // Función para obtener y validar los parámetros de inicio de sesión
 function getParmregistro($params)
 {
@@ -153,15 +207,21 @@ function getParmregistro($params)
 
         
         // Comprobar usuario y contraseña
+       
         if (empty($params['nombre_usuario']) || empty($params['clave']) || !DB_comprobarUsuario($db, $params['nombre_usuario'], ($params['clave']))) {
             $results['err'] = 'Usuario o contraseña incorrectos o cuenta no activa';
+            var_dump($params); // o print_r($params);
         }
         
       
 
         // Comprobar si el usuario es administrador de la páquina -> tiene más ventajas en la página
+        $comprobarUsuario = DB_comprobarAdmin($db, $params['nombre_usuario'], $params['clave']);
+
+
         if (DB_comprobarUsuario($db, $params['nombre_usuario'], ($params['clave'])) && DB_comprobarAdmin($db, $params['nombre_usuario'])) {
             $_SESSION['admin'] = 'admin';
+          
         }
 
         // Guardar datos en las variables de sesión
@@ -239,8 +299,9 @@ function bienvenido($nombre)
         //  $fotoBase64 = base64_encode($fotografia);
 
           // Mostrar la imagen
-          echo "<img class='fotoUsuario' src='data:image/.png;base64,{$fotografia}' />";
-      
+          $fotografia = base64_encode($fotografia);
+          echo "<img class='fotoUsuario' src='data:image/png;base64,{$fotografia}' />";
+          
 
       // Cerrar la conexión a la base de datos
       $stmt->close();
@@ -278,6 +339,34 @@ setcookie(
 // Destruir sesión
 session_destroy();
 }
+//Funcion para el el footer
+function footerHTML()
+{
+    echo <<< HTML
+    <footer>
+
+      <div>© 2023 Tecnologías Web</div>
+      <div class="barra">   </div>
+      <div>Chaymae Mtafe Boukdir <br /> Cristina del Aguila Martín</div>
+      <div class="barra">   </div>
+      <div class="red"> <a href="/~aulas/proyecto_final/documentacion.pdf" target="_blank">Documentación</a> </div>
+      <div class="barra">  </div>
+   
+    </footer>
+
+  </body>
+
+</html>
+<style>
+
+
+</style>
+
+HTML;
+
+    ob_end_flush();
+}
+
 echo <<<HTML
 
 

@@ -19,6 +19,7 @@ echo <<<HTML
 HTML;
 //Declaramos variables para que tengan ese valor en caso de no asignarle otro
 $accion='';
+$items_buscar='';
 if (isset($_POST['accion'])) {
 
     switch ($_POST['accion']) {
@@ -45,13 +46,13 @@ if (isset($_POST['accion'])) {
           break;
 
         case 'Añadir_valoracion_neg':
-            $id_incidencias = $_POST['id_incidencia'];
+            $id_incidencias = $_POST['id_incidencias'];
             $valoracion = -1;
             $accion = 'Valoracion_enviada';
 
           break;
           case 'Añadir_valoracion_pos':
-            $id_incidencias = $_POST['id_incidencia'];
+            $id_incidencias = $_POST['id_incidencias'];
             $valoracion = 1;
             $accion = 'Valoracion_enviada';
 
@@ -139,7 +140,7 @@ if (isset($_POST['accion'])) {
       
           
             break;
-
+              
             case 'Cancelar':
                 header('/~aulas/proyecto_final/controlador/mis_Incidencias.php');
               break;

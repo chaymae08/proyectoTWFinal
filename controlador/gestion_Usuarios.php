@@ -87,12 +87,13 @@ if (isset($_POST['accion'])) {
         case 'Confirmar registro':
             $accion = 'Confirmar registro';
         //SI no hay foto, asignaremos una imagen por defecto
-        $imagen="../vista/fotos/foto_defecto.png";
+        $imagen="../vista/fotos/foto_defecto.jpeg";
         $tamimagen=filesize($imagen);
         $fp=fopen($imagen, 'rb'); //abrimos el archivo binario "imagen" en modo lectura
         $contenido=fread($fp, $tamimagen);//lee el archivo hasta el tamaño de la imagen
         $contenido=addslashes($contenido);//Añadimos caracteres de escape
         fclose($fp); //cerramos el archivo
+
 
         $datos['fotografia'] = (isset($_FILES['foto_usuario_registro']['tmp_name']) && $_FILES['foto_usuario_registro']['tmp_name']!='') ? addslashes(file_get_contents($_FILES['foto_usuario_registro']['tmp_name'])) : $contenido;
             break;
@@ -180,7 +181,7 @@ if (!is_string($db=DB_conexion())) {
             if (!empty($_FILES['foto_usuario_registro']['tmp_name'])) {
                 $datos['fotografia'] = addslashes(file_get_contents($_FILES['foto_usuario_registro']['tmp_name']));
             } else {
-                $imagen = "../vista/fotos/foto_defecto.png";
+                $imagen = "../vista/fotos/foto_defecto.jpeg";
                 $tamimagen = filesize($imagen);
                 $fp = fopen($imagen, 'rb'); 
                 $contenido = fread($fp, $tamimagen);
@@ -212,9 +213,9 @@ if (!is_string($db=DB_conexion())) {
                     $info[] = $msg;
                     DB_log($db,$_SESSION['nombre_usuario'],'Error al registrar a '.$_POST['user_nombre'].' '.$_POST['user_apellidos']);
                 }
-                /*
+                
                 header('refresh: 5; url=gestion_Usuarios.php');
-                echo "Redireccionado en 5 seg..";*/
+                echo "Redireccionado en 5 seg..";
             }
             break;
         case 'Cancelar':

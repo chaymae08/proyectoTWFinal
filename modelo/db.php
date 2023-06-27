@@ -1,10 +1,14 @@
 <?php
 
+include_once 'dbparametros.php';
+
+
 //Conexion a la BD, devuelve recurso asociado a la BD o error
 function DB_conexion()
 {
    //$db = mysqli_connect('localhost', 'chaymae082223', 'Qc4rTVuC', 'chaymae082223');
    $db = mysqli_connect('localhost', 'root', 'aulas', 'chaymae082223');
+   $db->set_charset("utf8mb4");
     if (!$db) {
         return "Error de conexión a la base de datos (".mysqli_connect_errno().") : ".mysqli_connect_error();
     }
@@ -56,39 +60,35 @@ function DB_log($db, $usuario, $descripcion) {
   $stmt->execute();
 }
 function DB_comprobarUsuario($db, $usuario, $clave) {
-  // Preparar la consulta SQL
   $stmt = $db->prepare("SELECT * FROM usuarios WHERE email = ?");
-
-  // Verificar si la preparación fue exitosa
+  
   if ($stmt === false) {
-      // Manejar el error - por ejemplo, imprimir un mensaje de error y terminar la ejecución
       die('Error en la preparación: ' . $db->error);
   }
-
-  // Vincular los parámetros a la consulta SQL
+  
   $stmt->bind_param("s", $usuario);
-
-  // Ejecutar la consulta SQL
   $stmt->execute();
 
-  // Obtener el resultado
   $resultado = $stmt->get_result();
 
-  // Verificar si existe algún usuario con el correo proporcionado
   if ($resultado->num_rows > 0) {
-      // Obtener la fila de resultados
       $fila = $resultado->fetch_assoc();
-
-      // Verificar la contraseña proporcionada contra el hash almacenado
-      if (password_verify($clave, $fila['clave'])) {
-          // La contraseña es correcta
+      
+      if (!isset($fila['clave'])) {
+          die("La clave no se encuentra en la base de datos");
+      }
+      
+      $hash = $fila['clave'];
+      if (password_verify($clave, $hash)) {
           return true;
+      } else {
+          die("La verificación de la contraseña ha fallado. Clave proporcionada: '$clave', hash de la base de datos: '$hash'");
       }
   }
-
-  // El correo y la contraseña no coinciden
+  
   return false;
 }
+
 
 //Llamar a la funcion que tiene los errores
 function msgError($msg)
@@ -208,14 +208,6 @@ function DB_idUsuario($db, $correo) {
 }
 
 
-//Numero de incidenciass total en la BD
-function DB_getNumIncidenciasTotal($db)
-{
-    $res = mysqli_query($db, "SELECT COUNT(*) FROM incidencias");
-    $num = mysqli_fetch_row($res)[0];
-    mysqli_free_result($res);
-    return $num;
-}
 //Obtenemos todas las incidencias
 function DB_getListadoIncidenciaTotal($db)
 {
@@ -233,57 +225,71 @@ function DB_getListadoIncidenciaTotal($db)
    $tabla = false;
     }
     return $tabla;
-}
-//Obtener el listado de incidencias que contiene la busqueda segun el orden
-function DB_getListadoIncidencias($db, $texto_buscar, $lugar, $estado, $orden, $items)
+  }
+  function DB_getListadoIncidencias($db, $texto_buscar, $lugar, $estado, $orden, $items, $palabra_clave)
 {
-    $res1='';
     $tabla=false;
     $tabla2=[];
 
     //Dependiendo del orden especificado
     if ($orden == 'Antiguedad') {
-      $o = 'fecha DESC';
+        $o = 'fecha DESC';
     } else if ($orden=='Positivos'){
-      $o = 'positivos DESC';
+        $o = 'positivos DESC';
     }else if ($orden=='PositivosNetos'){
-      $o = '(positivos - negativos) DESC';
+        $o = '(positivos - negativos) DESC';
     }
 
-    //Consulta con los parametros 
-    $res = mysqli_query($db, "SELECT * FROM incidencias WHERE texto LIKE '%$texto_buscar%' AND lugar LIKE '%$lugar%' ORDER BY $o LIMIT $items ");
-
-    if ($res) { // Si no hay error
-      if (mysqli_num_rows($res)>0) {// Si hay alguna tupla de respuesta
+    //Primera consulta para obtener las incidencias
+    $res = mysqli_query($db, "SELECT * FROM incidencias WHERE (texto LIKE '%$texto_buscar%' OR lugar LIKE '%$lugar%' OR texto LIKE '%$palabra_clave%') ORDER BY $o LIMIT $items ");
+    if ($res && mysqli_num_rows($res)>0) { // Si no hay error y hay alguna tupla de respuesta
         $tabla = mysqli_fetch_all($res, MYSQLI_ASSOC);
-      } else {    // No hay resultados para la consulta
-          $tabla = false;
-      }
-
-      //Si se han conseguido resultados
-      if($tabla){
-        if($estado!=''){
+        $incidencia_ids = array_column($tabla, 'id_incidencias');
+        $incidencia_ids_str = implode(', ', $incidencia_ids);
+    }
+    
+    //Segunda consulta para obtener los estados de las incidencias obtenidas
+    if(isset($incidencia_ids_str)){
+        $res2 = mysqli_query($db, "SELECT * FROM estados WHERE id_incidencia IN ($incidencia_ids_str)");
+        $estados = false;
+        if ($res2 && mysqli_num_rows($res2)>0) { // Si no hay error y hay alguna tupla de respuesta
+            $estados = mysqli_fetch_all($res2, MYSQLI_ASSOC);
+        }
+    }
+    
+    //Si se han conseguido resultados
+    if($tabla && $estados){
         //Para cada tupla obtenida, comprobamos que su estado está en la lista de estados seleccionados
-        foreach($tabla as $incidencias){
-          if(in_array($incidencias['estado_id'], $estado)){
-            array_push($tabla2, $incidencias);
-          }
+        foreach($tabla as $incidencia){
+            $matched = false; 
+            foreach($estados as $estado){
+                //'id_incidencias' es el campo que relaciona las incidencias con los estados
+                if($incidencia['id_incidencias'] == $estado['id_incidencia']){
+                    $matched = true;
+                    break; 
+                }
+            }
+            if($matched){
+                array_push($tabla2, $incidencia);
+            }
         }
 
         // para poder acceder más fácilmente después
-        if($tabla2!=''){
-          unset($tabla);
-          $tabla = $tabla2;
+        if(!empty($tabla2)){
+            $tabla = $tabla2;
         }
-      }
-
-      mysqli_free_result($res);// Liberar memoria de la consulta
-      }
-    }else {// Error en la consulta
-      $tabla = false;
     }
+
+    if(isset($res)) {
+        mysqli_free_result($res);// Liberar memoria de la consulta
+    }
+    if(isset($res2)) {
+        mysqli_free_result($res2);// Liberar memoria de la consulta
+    }
+  
     return $tabla;
 }
+
 
 
   //Devuelve los comentarios de una incidencia
@@ -306,8 +312,7 @@ function DB_getEstadosIncidencia($db,$id)
 {
   $vector_estados='';
   $columns = []; //
-      /*  echo "The value of id is: ";
-      var_dump($id);*/
+     
 
   $res = mysqli_query($db, "SELECT * FROM estados WHERE id_incidencia='$id'");
 
@@ -584,7 +589,7 @@ function DB_getListadoUsuariosTotales($db)
   }
   //Devuelve todos los datos del usuario registrado
 function DB_obtenerDatosUsuario($db, $id)
-{
+{   //utilizamos consulta preparada 
     $prep = mysqli_prepare($db, "SELECT * FROM usuarios WHERE id_usuario=?");
     $val = $id;
     mysqli_stmt_bind_param($prep, 'i', $id);
@@ -610,7 +615,7 @@ function DB_obtenerDatosUsuario($db, $id)
     return $usuario;
 }
 function DB_editarUsuario($db, $id, $datos)
-{
+{   //La clave no se la podemos mostrar a ninguna persona 
     //No comprobamos que no se repita el correo, ya que en la BBDD lo tenemos como unique, y en el caso de repetir, mostramos el error de la bdd
     if ($datos['fotografia']=='') { //Si no hemos subido una nueva imagen, no modificar la que habia
 
@@ -628,11 +633,13 @@ function DB_editarUsuario($db, $id, $datos)
 
         if ($datos['clave']=='') { //Si no hemos cambiado clave pero si imagen, cambiar solo imagen
             $res = mysqli_query($db, "UPDATE usuarios SET nombre='{$datos['nombre']}', apellidos='{$datos['apellidos']}',email='{$datos['email']}',
-         direccion_postal='{$datos['direccion']}',telefono='{$datos['telefono']}',tipo='{$datos['tipo']}',estado='{$datos['estado']}', foto='{$datos['fotografia']}'
+         direccion_postal='{$datos['direccion']}',telefono='{$datos['telefono']}',tipo='{$datos['tipo']}',estado='{$datos['estado']}', fotografia='{$datos['fotografia']}'
          WHERE id_usuario='$id'");
         } else { //Si hemos cambiado clave e imagen, cambiar ambas
+          $hashed_password = password_hash($datos['clave'], PASSWORD_DEFAULT); // Encriptar la contraseña
+
             $res = mysqli_query($db, "UPDATE usuarios SET nombre='{$datos['nombre']}', apellidos='{$datos['apellidos']}',email='{$datos['email']}',
-         direccion_postal='{$datos['direccion']}',telefono='{$datos['telefono']}',tipo='{$datos['tipo']}',estado='{$datos['estado']}', foto='{$datos['fotografia']}',clave='{$datos['clave']}'
+         direccion_postal='{$datos['direccion']}',telefono='{$datos['telefono']}',tipo='{$datos['tipo']}',estado='{$datos['estado']}', fotografia='{$datos['fotografia']}',clave='{$hashed_password}'
          WHERE id_usuario='$id'");
         }
     }
@@ -663,11 +670,11 @@ function DB_añadirUsuario($db, $datos, $tipo)
     $image_base64 = '';
     if (!empty($_FILES['foto_usuario_registro']['tmp_name'])) {
         $image = file_get_contents($_FILES['foto_usuario_registro']['tmp_name']);
-        $image_base64 = base64_encode($image);
+        //$image_base64 = base64_encode($image);
     } else {
         // Si no se proporciona una foto, establecer una por defecto
-        $default_image = file_get_contents('../vista/fotos/foto_defecto.png');
-        $image_base64 = base64_encode($default_image);
+        $image = file_get_contents('../vista/fotos/foto_defecto.png');
+       // $image_base64 = base64_encode($default_image);
     }
 
     // Obtener la contraseña del usuario
@@ -682,7 +689,7 @@ function DB_añadirUsuario($db, $datos, $tipo)
         $stmt = mysqli_prepare($db, "INSERT INTO usuarios (nombre,apellidos,email,fotografia,clave,tipo,direccion_postal,telefono,estado)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)");
 
-        mysqli_stmt_bind_param($stmt, "sssssssss", $datos['nombre'], $datos['apellidos'], $datos['email'], $image_base64, $clave_encriptada, $datos['tipo'], $datos['direccion'], $datos['telefono'],$datos['estado']);
+        mysqli_stmt_bind_param($stmt, "sssssssss", $datos['nombre'], $datos['apellidos'], $datos['email'], $image, $clave_encriptada, $datos['tipo'], $datos['direccion'], $datos['telefono'],$datos['estado']);
 
         $res = mysqli_stmt_execute($stmt);
 
@@ -697,6 +704,215 @@ function DB_añadirUsuario($db, $datos, $tipo)
         return true;
     } // OK
 }
+//Funcion para restaurar un archivo
+function DB_Restaurar_base($db, $archivo)
+{
+    $sql = '';
+    $error = '';
+    if (file_exists($archivo)) {
+        $query = file($archivo);
+
+        foreach ($query as $q) {
+          if (substr($q, 0, 2) == '--' || $q == '') {
+              continue;
+            }
+            $sql .= $q;
+            if (substr(trim($q), - 1, 1) == ';') {
+                $result = mysqli_query($db, $sql);
+                if (! $result) {
+                    $error .= mysqli_error($db) . "\n";
+                }
+                $sql = '';
+            }
+        }
+        if ($error) {
+            $salida = "Error";
+
+        } else {
+            $salida = "Éxito";
+        }
+    }
+
+    return $salida;
+}
+
+//Borra un comentario especifico de una incidencia
+function DB_borrarComentario($db, $id, $id_incidencias)
+{
+    mysqli_query($db, "DELETE FROM comentarios WHERE id_comentarios='$id'");
+
+    if (mysqli_affected_rows($db)==1) {
+        mysqli_query($db, "UPDATE incidencias SET num_comentarios=num_comentarios-1 WHERE id_incidencias='{$id_incidencias}'");
+        return true;
+    } else {
+        return false;
+    }
+}
+//Funcion para actualizar incidencia de la BD
+function DB_editarIncidencia($db, $datos)
+{
+  if ($datos['fotografia']=='') { //Si no hemos subido una nueva imagen, no modificar la que habia
+      $res = mysqli_query($db, "UPDATE incidencias SET texto='{$datos['texto']}',autor='{$_SESSION['id_usuario']}',
+       descripcion='{$datos['descripcion']}',lugar='{$datos['lugar']}',fecha='{$datos['fecha']}'
+       WHERE id_incidencias='{$datos['id_incidencias']}'");
+  } else { //Si hemos subido imagen,sustituir la anterior
+      $res = mysqli_query($db, "UPDATE incidencias SET texto='{$datos['texto']}',autor='{$_SESSION['id_usuario']}',
+     descripcion='{$datos['descripcion']}',lugar='{$datos['lugar']}',fecha='{$datos['fecha']},palabra_clave='{$datos['palabra_clave']}'
+     WHERE id_incidencias='{$datos['id_incidencias']}'");
+  }
+
+  //Borramos los estados antiguos e insertamos los nuevos
+  mysqli_query($db, "DELETE FROM estados WHERE id_incidencia='{$datos['id_incidencias']}'");
+  foreach ($datos['estados'] as $c) {
+      $res2 = mysqli_query($db, "INSERT INTO estados (id_incidencia,id_estados) VALUES ('{$datos['id_incidencias']}','{$c}')");
+  }
+
+  //Borramos las fotos antiguas e insertamos las nuevas
+  mysqli_query($db, "DELETE FROM imagenes_incidencias WHERE id_incidencias='{$datos['id_incidencias']}'");
+  foreach ($datos['fotos_descripcion_edicion'] as $f) {
+      $res2 = mysqli_query($db, "INSERT INTO imagenes_incidencias (id_incidencias,fotos_incidencia) VALUES ('{$datos['id_incidencias']}','{$f}')");
+  }
+
+  if (!$res || !$res2) {
+      $info[] = 'Error al actualizar';
+      $info[] = mysqli_error($db);
+  }
+
+
+  if (isset($info)) {
+      return $info;
+  } else {
+      return true;
+  }
+}
+
+//Borrar la incidencia indicado por el titulo
+function DB_borrarIncidencia($db, $id)
+{
+    mysqli_query($db, "DELETE FROM imagenes_incidencias WHERE id_incidencias='$id'");
+    mysqli_query($db, "DELETE FROM valoraciones WHERE id_incidencias='$id'");
+    mysqli_query($db, "DELETE FROM comentarios WHERE id_incidencias='$id'");
+    mysqli_query($db, "DELETE FROM estados WHERE id_incidencia='$id'");
+
+    mysqli_query($db, "DELETE FROM incidencias WHERE id_incidencias='$id'");
+    if (mysqli_affected_rows($db)==1) {
+        return true;
+    } else {
+        return false;
+    }
+}
+//Numero de incidencias total en la BD
+function DB_getNumIncidenciasTotal($db)
+{
+    $res = mysqli_query($db, "SELECT COUNT(*) FROM incidencias");
+    $num = mysqli_fetch_row($res)[0];
+    mysqli_free_result($res);
+    return $num;
+}
+
+//Numero de usuarios total en la BD
+function DB_getNumUsuariosTotal($db)
+{
+    $res = mysqli_query($db, "SELECT COUNT(*) FROM usuarios");
+    $num = mysqli_fetch_row($res)[0];
+    mysqli_free_result($res);
+    return $num;
+}
+
+//Devuelve las tres incidencia con mas comentarios
+function DB_getMasComentadas($db){
+    $res = mysqli_query($db, "SELECT texto FROM incidencias ORDER BY num_comentarios DESC LIMIT 3");
+    if($res){
+      if(mysqli_num_rows($res)>0){
+        while ($row = $res->fetch_assoc())
+            $val[] = $row['texto'];
+        return $val;
+      }
+      else
+        return false;
+    }else
+    return false;
+  }
+  function registrarUsuario($db,$params,$tipo) {
+    // Configuración de la base de datos
+    $dbHost = 'localhost';
+    $dbUsername = 'root';
+    $dbPassword = 'aulas';
+    $dbName = 'chaymae082223';
+
+    // Crear conexión
+    $conn = new mysqli($dbHost, $dbUsername, $dbPassword, $dbName);
+
+    // Verificar conexión
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+   
+
+    
+   // Obtener la contraseña del usuario
+   $clave = $params['clave'];
+
+   // Encriptar la contraseña
+   $clave_encriptada = password_hash($clave, PASSWORD_DEFAULT);
+
+    if($tipo == ('Colaborador')){
+    // Preparar la consulta SQL
+    $sql = "INSERT INTO usuarios (nombre, apellidos, email, direccion_postal,telefono, clave, fotografia,tipo) VALUES (?, ?, ?, ?, ?, ?, ?,?)";
+
+    // Preparar la declaración
+    $stmt = $conn->prepare($sql);
+
+         $image_base64 = '';
+     if (isset($_FILES['foto_usuario_registro']) && is_uploaded_file($_FILES['foto_usuario_registro']['tmp_name'])) {
+         $image = file_get_contents($_FILES['foto_usuario_registro']['tmp_name']);
+     } else {
+         // Si no se proporciona una foto, establecer una por defecto
+         $image = file_get_contents('../vista/fotos/foto_defecto.jpeg');
+     }
+    
+
+    // Vincular los parámetros
+    $stmt->bind_param("ssssssss", $params['nombre_usuario'], $params['apellidos_usuario'], $params['email_usuario'], $params['direccion_usuario'], $params['telefono_usuario'], $clave_encriptada, $image,$tipo);
+}
+
+if($tipo == ('Administrador')){
+ // Preparar la consulta SQL
+ $sql = "INSERT INTO usuarios (nombre, apellidos, email, direccion_postal,telefono, clave, fotografia,tipo,estado) VALUES (?, ?, ?, ?, ?, ?, ?,?,?)";
+
+ // Preparar la declaración
+ $stmt = $conn->prepare($sql);
+
+ // Obtener la imagen en formato base64
+ $image_base64 = '';
+ if (isset($_FILES['foto_usuario_registro'])) {
+     $image = file_get_contents($_FILES['foto_usuario_registro']['tmp_name']);
+   //  $image_base64 = base64_encode($image);
+ } else {
+  // Si no se proporciona una foto, establecer una por defecto
+  $image = file_get_contents('../vista/fotos/foto_defecto.jpeg');
+  //$image_base64 = base64_encode($default_image);
+}
+
+ // Vincular los parámetros
+ $stmt->bind_param("sssssssss", $params['nombre_usuario'], $params['apellidos_usuario'], $params['email_usuario'], $params['direccion_usuario'], $params['telefono_usuario'], $clave_encriptada, $image,$params['tipo'],$params['estado']);
+
+
+}
+    // Ejecutar la declaración
+    if ($stmt->execute()) {
+        echo "<p style='color:black;'>Nuevo registro creado exitosamente</p>";
+    } else {
+        echo "<p style='color:black;'>Error: " . $sql . "<br>" . $conn->error;
+    }
+  
+    // Cerrar la conexión
+    $conn->close();
+}
+
+
+
+
 
 
 

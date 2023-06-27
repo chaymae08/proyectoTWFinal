@@ -23,37 +23,7 @@ echo <<<HTML
 <div class="cajaPrincipal">
   <h1>Cuestionario de registro</h1>
 HTML;
-/*
-$msg='';
 
-    
-    $params = obtenerParametrosRegistro($_POST,'Colaborador');
-    formularioRegistro($params, 'Registrar usuario','Colaborador');
-    registrarUsuario($params,'Confirmar registro','Colaborador');
-    // Obtener datos POST
-    if (isset($_POST['accion']) && $_POST['accion'] == 'Confirmar registro') {
-    if ((isset($_POST['accion']) && $_POST['accion'] == 'Registrar usuario') &&
-        ($params['errnombre'] == '' && $params['errapellidos'] == '' && $params['erremail'] == '' && $params['errdireccion'] == '' && $params['errtelefono'] == '' && $params['errfoto'] == '')) {
-        $params['editable'] = false;
-        $_SESSION['clave_registro'] = ($_POST['clave']);
-            
-        // Si no hay foto, asignaremos una imagen por defecto
-        $imagen = "../vista/fotos/foto_defecto.png";
-        $contenido = addslashes(file_get_contents($imagen));
-
-        $params['foto_usuario'] = (isset($_FILES['foto_usuario_registro']['tmp_name']) && $_FILES['foto_usuario_registro']['tmp_name'] != '') ? addslashes(file_get_contents($_FILES['foto_usuario_registro']['tmp_name'])) : $contenido;
-        $_SESSION['foto_registro'] = $params['foto_usuario'];
-
-        formularioRegistro($params, 'Confirmar registro','Colaborador');
-        //registrarUsuario($params,'Confirmar registro','Colaborador');
-
-    } else {
-        formularioRegistro($params, 'Registrar usuario','Colaborador');
-    }
-    formularioRegistro($params, 'Registrar usuario','Colaborador');
-    }
-
-echo "</div></div>";*/
    $msg='';
 
     //Obtenemos datos POST
@@ -64,8 +34,7 @@ echo "</div></div>";*/
     //Si hemos editado la incidencia, recuperamos la clave y la imagen y añadimos el usuario a la bd
     if (isset($_POST['accion']) && $_POST['accion']=='Confirmar registro') {
         if (!is_string($db=DB_conexion())) {
-
-           // $params['clave']=$_SESSION['clave_registro'];
+            $params['clave']=$_SESSION['clave_registro'];
             $params['foto_usuario']=$_SESSION['foto_registro'];
             $res = registrarUsuario($db, $params, 'Colaborador');
             if ($res===true) {
@@ -93,7 +62,7 @@ echo "</div></div>";*/
         $_SESSION['clave_registro']=($_POST['clave']);
 
         //SI no hay foto, asignaremos una imagen por defecto
-        $imagen="../vista/fotos/foto_defecto.png";
+        $imagen="../vista/fotos/foto_defecto.jpeg";
         $tamimagen=filesize($imagen);
         $fp=fopen($imagen, 'rb'); //abrimos el archivo binario "imagen" en modo lectura
         $contenido=fread($fp, $tamimagen);//lee el archivo hasta el tamaño de la imagen

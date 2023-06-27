@@ -7,7 +7,7 @@ function FORM_buscarIncidencia($estado)
     <h2>Criterios de búsqueda</h2>
     <h3 class='tit_incidencias'>Incidencias que contengan</h3>
 
-        <div class='frm_incidencia_buscar_input'> <label for='incidencia_texto'>Texto de búsqueda:</label>
+        <div class='frm_incidencia_buscar_input'> <label for='incidencia_texto'>Texto de búsqueda(Título incidencia):</label>
         <input type='text' name='texto_buscar'";
         if(isset($_POST['texto_buscar']))
           echo "value='{$_POST['texto_buscar']}'";
@@ -171,7 +171,7 @@ function Vista_verIncidencia($db, $v, $comentarios, $valorada)
 
             echo "<p>".$c['comentarios']."</p>";
 
-            //Si eres administrador, podras borra comentario
+            //Si eres administrador, puedes borra comentario
                 if (isset($_SESSION['nombre_usuario']) && isset($_SESSION['admin'])) {
                     echo "<form action='{$_SERVER['PHP_SELF']}' method='POST'>
                           <input type='hidden' name='id_comentario' value='{$c['id_comentarios']}' />
@@ -186,6 +186,7 @@ function Vista_verIncidencia($db, $v, $comentarios, $valorada)
                 echo " </div>";
             }
         }
+        echo "<div class='button-container'>";
         echo "<button type='submit' name='accion' value='Añadir_comentario' id='boton_anadir_comentario'>
                  
               </button>";
@@ -226,75 +227,73 @@ if (isset($_SESSION['id_usuario'])) {
     if ($valorada == true) {
       echo "<p>Ya has valorado esta incidencia </p>";
     } else {
-        echo "<form action='$_SERVER[PHP_SELF]' method='POST'>
-        <input type='hidden' name='autor_valoracion' value='".$_SESSION['id_usuario']."' />
-        <input type='hidden' name='id_incidencia' value='{$v['id_incidencias']}' />
-        <button type='submit' name='accion' value='Añadir_valoracion_pos' id='boton_anadir_valoracion_pos'>
-        </button>
-      </form>";
+      echo "<div class='botones_valoracion'>
+  <form action='$_SERVER[PHP_SELF]' method='POST'>
+    <input type='hidden' name='autor_valoracion' value='".$_SESSION['id_usuario']."' />
+    <input type='hidden' name='id_incidencias' value='{$v['id_incidencias']}' />
+    <button type='submit' name='accion' value='Añadir_valoracion_pos' id='boton_anadir_valoracion_pos'></button>
+  </form>
 
-echo "<form action='$_SERVER[PHP_SELF]' method='POST'>
-        <input type='hidden' name='autor_valoracion' value='".$_SESSION['id_usuario']."' />
-        <input type='hidden' name='id_incidencia' value='{$v['id_incidencias']}' />
-        <button type='submit' name='accion' value='Añadir_valoracion_neg' id='boton_anadir_valoracion_neg'>
-        </button>
-      </form>";
+  <form action='$_SERVER[PHP_SELF]' method='POST'>
+    <input type='hidden' name='autor_valoracion' value='".$_SESSION['id_usuario']."' />
+    <input type='hidden' name='id_incidencias' value='{$v['id_incidencias']}' />
+    <button type='submit' name='accion' value='Añadir_valoracion_neg' id='boton_anadir_valoracion_neg'></button>
+  </form>
+</div>";
+        
    }
     echo "</div>";
   } else {
-    // Usuario visitante, verificar si ha realizado una valoración previa mediante cookies
-    $cookie_name = 'valoracion_incidencia_'.$v['id_incidencias'];
-    
-    if (isset($_COOKIE[$cookie_name])) {
-      echo "<p>Ya has valorado esta incidencia como ".$_COOKIE[$cookie_name]."</p>";
-    } else {
-      echo "<div class='botones_valoracion'>";
-   
-      echo "<form action='$_SERVER[PHP_SELF]' method='POST'>
-      <input type='hidden' name='autor_valoracion' value='".$_SESSION['id_usuario']."' />
-      <input type='hidden' name='id_incidencia' value='{$v['id_incidencias']}' />
-      <button type='submit' name='accion' value='Añadir_valoracion_pos' id='boton_anadir_valoracion_pos'>
-      </button>
-    </form>";
+    echo "<div class='botones_valoracion'>";
+$cookie_name = 'valoracion_incidencia_'.$v['id_incidencias'];
 
-   
-     echo "<form action='$_SERVER[PHP_SELF]' method='POST'>
-     <input type='hidden' name='autor_valoracion' value='".$_SESSION['id_usuario']."' />
-     <input type='hidden' name='id_incidencia' value='{$v['id_incidencias']}' />
-     <button type='submit' name='accion' value='Añadir_valoracion_neg' id='boton_anadir_valoracion_neg'>
-     </button>
-   </form>";
-      echo "</div>";
-    }
-  
-      // Establecer la cookie para evitar múltiples valoraciones del visitante
-      $cookie_value = 'visitante';
-      setcookie($cookie_name, $cookie_value, time() + (86400 * 30), "/"); // La cookie expirará en 30 días (puedes ajustar el tiempo según tus necesidades)
+// Verificar si la cookie está configurada antes de usarla
+$autor_valoracion = isset($_COOKIE[$cookie_name]) ? $_COOKIE[$cookie_name] : '';
+
+if (!isset($_COOKIE[$cookie_name])) {
+  echo "<form action='$_SERVER[PHP_SELF]' method='POST'>
+  <input type='hidden' name='autor_valoracion' value='".$autor_valoracion."' />
+  <input type='hidden' name='id_incidencias' value='{$v['id_incidencias']}' />
+  <button type='submit' name='accion' value='Añadir_valoracion_pos' id='boton_anadir_valoracion_pos'>
+  </button>
+</form>";
+
+ 
+ echo "<form action='$_SERVER[PHP_SELF]' method='POST'>
+ <input type='hidden' name='autor_valoracion' value='".$autor_valoracion."' />
+ <input type='hidden' name='id_incidencias' value='{$v['id_incidencias']}' />
+ <button type='submit' name='accion' value='Añadir_valoracion_neg' id='boton_anadir_valoracion_neg'>
+ </button>
+</form>";
+} else {
+  echo "<p>Ya has valorado esta incidencia como ".$_COOKIE[$cookie_name]."</p>";
+}
+
+echo "</div>";
+     
     }
   
   
    
       echo "  <div class='pie_pagina'><form action='$_SERVER[PHP_SELF]' method='POST'>
-            <input type='hidden' name='id_incidencia' value='{$v['id_incidencias']}' />";
+            <input type='hidden' name='id_incidencias' value='{$v['id_incidencias']}' />";
     //Si estas logueado, mostrar botones editar y borrar
     
-    if (isset($_SESSION['id_usuario'])) {
-        echo "<button type='submit' name='accion' value='Editar' id='boton_editar'>
-                
-              </button>
-              <button type='submit' name='accion' value='Borrar' id='boton_borrar'>
-                 
-              </button>";
-    }
-
+    if (isset($_SESSION['admin'])) {
+      echo "<button type='submit' name='accion' value='Editar' id='boton_editar'></button>
+            <button type='submit' name='accion' value='Borrar' id='boton_borrar'></button>";
+  }
+  
     echo<<< HTML
        <input type='submit' name='accion' value='Cancelar' id='boton_cancelar' />
      
     </button>
 
-        </form></div>
-
     </div>
+
+    </form></div>
+
+  </div>
   
     
 
@@ -539,84 +538,6 @@ function mostrarScripts()
     </script>
 HTML;
 }
-function registrarUsuario($db,$params,$tipo) {
-     // Configuración de la base de datos
-     $dbHost = 'localhost';
-     $dbUsername = 'root';
-     $dbPassword = 'aulas';
-     $dbName = 'chaymae082223';
- 
-     // Crear conexión
-     $conn = new mysqli($dbHost, $dbUsername, $dbPassword, $dbName);
- 
-     // Verificar conexión
-     if ($conn->connect_error) {
-         die("Connection failed: " . $conn->connect_error);
-     }
-    
-
-     
-    // Obtener la contraseña del usuario
-    $clave = $params['clave'];
-
-    // Encriptar la contraseña
-    $clave_encriptada = password_hash($clave, PASSWORD_DEFAULT);
-
-     if($tipo == ('Colaborador')){
-     // Preparar la consulta SQL
-     $sql = "INSERT INTO usuarios (nombre, apellidos, email, direccion_postal,telefono, clave, fotografia,tipo) VALUES (?, ?, ?, ?, ?, ?, ?,?)";
- 
-     // Preparar la declaración
-     $stmt = $conn->prepare($sql);
- 
-          $image_base64 = '';
-      if (isset($_FILES['foto_usuario_registro']) && is_uploaded_file($_FILES['foto_usuario_registro']['tmp_name'])) {
-          $image = file_get_contents($_FILES['foto_usuario_registro']['tmp_name']);
-          $image_base64 = base64_encode($image);
-      } else {
-          // Si no se proporciona una foto, establecer una por defecto
-          $default_image = file_get_contents('../vista/fotos/foto_defecto.png');
-          $image_base64 = base64_encode($default_image);
-      }
-     
-
-     // Vincular los parámetros
-     $stmt->bind_param("ssssssss", $params['nombre_usuario'], $params['apellidos_usuario'], $params['email_usuario'], $params['direccion_usuario'], $params['telefono_usuario'], $clave_encriptada, $image_base64,$tipo);
-}
-
-if($tipo == ('Administrador')){
-  // Preparar la consulta SQL
-  $sql = "INSERT INTO usuarios (nombre, apellidos, email, direccion_postal,telefono, clave, fotografia,tipo,estado) VALUES (?, ?, ?, ?, ?, ?, ?,?,?)";
- 
-  // Preparar la declaración
-  $stmt = $conn->prepare($sql);
-
-  // Obtener la imagen en formato base64
-  $image_base64 = '';
-  if (isset($_FILES['foto_usuario_registro'])) {
-      $image = file_get_contents($_FILES['foto_usuario_registro']['tmp_name']);
-      $image_base64 = base64_encode($image);
-  } else {
-   // Si no se proporciona una foto, establecer una por defecto
-   $default_image = file_get_contents('../vista/fotos/foto_defecto.png');
-   $image_base64 = base64_encode($default_image);
-}
-
-  // Vincular los parámetros
-  $stmt->bind_param("sssssssss", $params['nombre_usuario'], $params['apellidos_usuario'], $params['email_usuario'], $params['direccion_usuario'], $params['telefono_usuario'], $clave_encriptada, $image_base64,$params['tipo'],$params['estado']);
-
-
-}
-     // Ejecutar la declaración
-     if ($stmt->execute()) {
-         echo "<p style='color:black;'>Nuevo registro creado exitosamente</p>";
-     } else {
-         echo "<p style='color:black;'>Error: " . $sql . "<br>" . $conn->error;
-     }
-   
-     // Cerrar la conexión
-     $conn->close();
-}
 
 
 
@@ -709,25 +630,7 @@ HTML;
       
 
 HTML;
-      /*
-    //Al ir a la pagina de añadir incidencia, mostramos un input para la imagen
-    if ($accion=='Añadir incidencia') {
-        echo "<div class='frm_incidencia_imagen'><div class='label'><label for='incidencia_imagen'>Imagen:</label></div>
-           <input type='file' name='incidencia_imagen' id='incidencia_imagen' accept='image/*' required $disabled/></div>
-           <div id='imagePreview'>
-
-           </div>";
-
-    //Para confirmar la insercion de la incidencia, mostramos la imagen seleccionada
-    } /* else {
-        echo "<strong>Imagen seleccionada:</strong> ".$_FILES['incidencia_imagen']['name'];
-        $imagen=$_FILES['incidencia_imagen']['tmp_name'];
-        $tamimagen=filesize($imagen);
-        $fp=fopen($imagen,'rb'); //abrimos el archivo binario
-        $contenido=fread($fp,$tamimagen);//lee el archivo hasta el tamaño de la imagen
-        fclose($fp); //cerramos el archivo
-        echo "<div><img class='fotoModificar' src='data:image/.jpg;base64,".base64_encode($contenido)."'/></div>";
-    }*/
+     
 
     echo <<< HTML
        <div class='fotos_descripcion'>
@@ -851,18 +754,18 @@ HTML;
             $fp=fopen($imagen,'rb'); //abrimos el archivo binario "imagen" en modo lectura
             $contenido=fread($fp,$tamimagen);//lee el archivo hasta el tamaño de la imagen
             fclose($fp); //cerramos el archivo
-            echo "<div><img class='fotoModificar' src='data:image/.png;base64,".($contenido)."'/></div>";
+            echo "<div><img class='fotoModificar' src='data:image/jpeg;base64,".base64_encode($contenido)."'/></div>";
         }
 
         //En caso de mofiicar
     } elseif ($accion=='Modificar Datos') {
-        echo "<img class='fotoModificar' src='data:image/.png;base64,".($datos['fotografia'])."'/>";
+        echo "<img class='fotoModificar' src='data:image/jpeg;base64,".base64_encode($datos['fotografia'])."'/>";
         echo "<div class='frm_usuario_imagen'><label for='usuario_imagen'><strong>Inserte imagen si desea cambiarla:</strong></label>
         <input type='file' name='usuario_img' id='usuario_img' accept='image/*'/></div>
         <div id='imagePreview'>
         </div>";
     } else {
-        echo "<img class='fotoModificar' src='data:image/.png;base64,".($datos['fotografia'])."'/>";
+        echo "<img class='fotoModificar' src='data:image/jpeg;base64,".base64_encode($datos['fotografia'])."'/>";
     }
 
     echo<<<HTML
@@ -1011,7 +914,7 @@ function Ver_listadoUsuarios($datos)
         <table>
         <tr>
         <td class='imagen'>
-          <img class='fotoUsuario' src='data:image/.png;base64,".($v['fotografia'])."' width='100px'/>
+          <img class='fotoUsuario' src='data:image/jpeg;base64,".base64_encode($v['fotografia'])."' width='100px'/>
         </td>
         <td class='usuario_nombre'>
         <div class='info_line'>
@@ -1138,6 +1041,253 @@ function AnadirUsuario($accion)
     </script>
 HTML;
 }
+//Formulario para la edicion de la incidencia
+function FORMU_editarIncidencia($nombre, $datos, $accion, $estados)
+{
+    //Dependiendo si es edicion o confirmacion
+    if (isset($datos['editable']) && $datos['editable']==false) {
+        $disabled='readonly="readonly"';
+    } else {
+        $disabled='';
+    }
+
+   
+    echo<<< HTML
+    <div class='frm_incidencia'><form action='$_SERVER[PHP_SELF]' method='POST' enctype="multipart/form-data">
+        <h3>$nombre</h3>
+
+
+         <div class='frm_incidencia_input'><div class='label'><label for='incidencia_titulo'>Título:</label></div>
+           <input type='text' name='incidencia_titulo' size=60 value='{$datos["texto"]}'$disabled>
+         </div>
+
+         <div class='frm_incidencia_input'><div class='label'><label for='incidencia_estado'>Estados:</label></div>
+HTML;
+
+  //Para el listado de estados, vemos cuales estan marcadas y si es confirmacion, no permitir clickear
+  foreach ($estados as $c) {
+    echo "<div class='estados'><input type='checkbox' name='incidencia_estados[]' value='{$c['id']}' ";
+    if ($accion=='Confirmar Borrado' || $accion=='Confirmar modificacion') {
+        echo "onclick='return false;'";
+        if (isset($datos['estados']) && is_array($datos['estados'])) {
+            foreach ($datos['estados'] as $ids) {
+                if ($ids==$c['id']) {
+                    echo "checked ";
+                }
+            }
+        }
+    }
+    else { //Hacer checkbox sticky
+        if (isset($datos['estados']) && is_array($datos['estados'])) {
+            foreach ($datos['estados'] as $ids) {
+                if ($ids==$c['id']) {
+                    echo "checked  ";
+                }
+            }
+        }
+    }
+    echo "/> {$c['estado']} </div>";
+}
+    echo <<< HTML
+    
+    </div>
+       <!-- Campo de entrada para Lugar -->
+       <div class='frm_incidencia_input'>
+       <div class='label'>
+         <label for='incidencia_lugar'>Lugar:</label>
+       </div>
+       <input type='text' name='incidencia_lugar' size='80' value='{$datos["lugar"]}' $disabled>
+
+     </div>
+
+     <!-- Campo de entrada para Fecha -->
+     <div class='frm_incidencia_input'>
+       <div class='label'>
+         <label for='incidencia_fecha'>Fecha y hora de la incidencia ocurrida:</label>
+       </div>
+       <input type='datetime-local' name='incidencia_fecha' value='{$datos["fecha"]}' $disabled/>
+     </div>
+
+     <div class='frm_incidencia_input'>
+       <div class='label'>
+         <label for='incidencia_palabraC'>Palabras Clave :</label>
+       </div>
+       <input type='text' name='incidencia_palabraC' value='{$datos["palabra_clave"]}' $disabled/>
+
+     </div>
+
+     <div class='frm_incidencia_textarea'><div class='label'><label for='incidencia_descripcion'>Descripción:</label></div>
+           <textarea name='incidencia_descripcion' rows=5 cols=80 $disabled/>{$datos["descripcion"]}</textarea>
+         </div>
+
+ 
+
+HTML;
+
+
+    //Al pulsar el boton de editar, veremos la imagen y podremos reemplazarla
+    if ($accion=='Modificar Datos') {
+      if (isset($datos['fotografia']) && is_array($datos['fotografia']) && !empty($datos['fotografia'])) {
+        foreach ($datos['fotografia'] as $foto) {
+            echo "<img class='fotoModificar' src='data:image/.jpg;base64,".base64_encode($foto)."'/>";
+        }
+    } else {
+        echo "No hay fotos para mostrar.";
+    }
+    
+     
+    
+      //  echo "<img class='fotoModificar' src='data:image/.jpg;base64,".base64_encode($datos['fotografia'])."'/>";
+        echo "<div class='frm_incidencia_imagen'><label for='incidencia_imagen'><strong>Inserte imagen si desea cambiarla:</strong></label>
+         <input type='file' name='incidencia_img' id='incidencia_img'  accept='image/*'/></div>
+         <div id='imagePreview'> </div>";
+
+    //Al confirmar la modificacion de la incidencia, veremos la imagen subida
+    } elseif ($accion=='Confirmar modificacion') {
+        if ($_FILES['incidencia_img']['error']!=0) {
+            echo "<p>Se mantiene la imagen principal anterior </p><br />";
+        } else {
+            echo "<p><strong>Imagen seleccionada:</strong> ".$_FILES['incidencia_img']['name']."</p><br />";
+            $imagen=$_FILES['incidencia_img']['tmp_name'];
+            $tamimagen=filesize($imagen);
+            $fp=fopen($imagen,'rb'); //abrimos el archivo binario "imagen" en modo lectura
+            $contenido=fread($fp,$tamimagen);//lee el archivo hasta el tamaño de la imagen
+            fclose($fp); //cerramos el archivo
+            echo "<div><img class='fotoModificar' src='data:image/.jpg;base64,".base64_encode($contenido)."'/></div>";
+        }
+
+      //En otro caso como borrar, mostrar solo la imagen
+    } else {
+      if (is_array($datos['fotografia'])) {
+        foreach ($datos['fotografia'] as $foto) {
+            echo "<img class='fotoModificar' src='data:image/.jpg;base64,".base64_encode($foto)."'/>";
+        }
+    } else {
+        echo "<img class='fotoModificar' src='data:image/.jpg;base64,".base64_encode($datos['fotografia'])."'/>";
+    }
+    
+    }
+
+    echo "<div class='fotos_descripcion'>";
+
+    if($accion=='Modificar Datos'){
+
+      //Si hay fotos antiguas
+      if($datos['fotografia']!=''){
+        echo "<h3>Fotos del de la descripcion antiguas</h3>";
+        echo "<label>Desmarque las imagenes que quiera borrar</label><br />";
+        $i=0;
+        //Para cada foto, la creamos en pequeña, la mostramos y añadimos checkbox para desmarcar la que no queremos mantener, almacenando el indice
+        foreach($datos['fotografia'] as $img){
+          $image = imagecreatefromstring($img);
+          $image = imagescale($image, 250);
+          ob_start();
+          imagejpeg($image);
+          $contents = ob_get_contents();
+          ob_end_clean();
+          echo "<div class='fotos_editar' style='display:inline-block;'>
+          <img src='data:image/jpeg;base64,".base64_encode($contents)."' style='margin:10px;'/><br />
+          <input type='checkbox' name='fotos_antiguas_numero[]' checked value='{$i}'  />
+          </div>";
+          $i++;
+          imagedestroy($image);
+
+        }
+      }
+      echo "</div>
+
+      <div class='fotos_descripcion'>
+        <h3>Nuevas fotos de la descripcion</h3>
+        <input type='file' id='fotos_descripcion_edicion' name='fotos_descripcion_edicion[]' style='display:block;' accept='image/*' multiple/>
+         </div>";
+
+    //Si es confirmacion de edicion, veremos cada una de las fotos nuevas subidas
+    } elseif ($accion=='Confirmar modificacion') {
+      if(isset($_FILES['fotos_descripcion_edicion']['tmp_name'][0]) && !empty($_FILES['fotos_descripcion_edicion']['tmp_name'][0])){
+        echo "<h3>Nuevas fotos seleccionadas</h3>
+        <label>Borraremos las fotos que no ha seleccionado.<br />Estas son las nuevas imagenes añadidas<br /></label>";
+        foreach($_FILES["fotos_descripcion_edicion"]['tmp_name'] as $key => $tmp_name){
+          $imagen=$_FILES['fotos_descripcion_edicion']['tmp_name'][$key];
+          $tamimagen=filesize($imagen);
+          $fp=fopen($imagen,'rb'); //abrimos el archivo binario "imagen" en modo lectura
+          $contenido=fread($fp,$tamimagen);//lee el archivo hasta el tamaño de la imagen
+          fclose($fp); //cerramos el archivo
+          echo "<img class='fotos_proc' style='display:inline;' width='100px' src='data:image/.jpg;base64,".base64_encode($contenido)."'/>";
+        }
+
+        }else {
+          echo "<p>No ha subido imagenes de la descripcion</p><p>Puede subirlas editando la incidencia</p>";
+      }
+    }
+
+
+
+    echo <<< HTML
+        
+
+         <input type='hidden' name='id_incidencias' value='{$datos["id_incidencias"]}' />
+         <div class='frm_incidencia_submit'>
+           <input type='submit' name='accion' value='$accion' />
+           <input type='submit' name='accion' value='Cancelar'/>
+         </div>
+
+    </form> </div>
+    </div>
+
+        <!--Scripts para ver imagenes recien subidas -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+            <script type="text/javascript">
+              (function(){
+                function filePreview(input){
+                  if(input.files && input.files[0]){
+                    var reader = new FileReader();
+
+                    reader.onload = function(e){
+                      $('#imagePreview').html("<img src='"+e.target.result+"' />");
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                  }
+                }
+                $('#incidencia_img').change(function(){
+                  filePreview(this);
+                });
+              })();
+
+
+            </script>
+
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+                <script type="text/javascript">
+                $(document).ready(function() {
+
+                  if (window.File && window.FileList && window.FileReader) {
+                    $("#fotos_procedimiento_edicion").on("change", function(e) {
+                       var files = e.target.files,
+                       filesLength = files.length;
+                       for (var i = 0; i < filesLength; i++) {
+                         var f = files[i]
+                         var fileReader = new FileReader();
+                         fileReader.onload = (function(e) {
+                            var file = e.target;
+                            $("<span class=\"pip\">" +
+                            "<img class=\"fotos_proc\" src=\"" + e.target.result + "\" title=\"" + file.name + "\"/>" +
+                            "</span>").insertAfter("#fotos_procedimiento_edicion");
+
+                        });
+                         fileReader.readAsDataURL(f);
+                       }
+                    });
+                  } else {
+                    alert("Your browser doesn't support to File API")
+                    }
+                });
+
+                </script>
+
+HTML;
+}
+
+
 
 
 
